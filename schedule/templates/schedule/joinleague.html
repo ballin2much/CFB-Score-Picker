@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Join League{% endblock %}
+{% block body %}
+    {% if request.user.is_authenticated %}
+        <div class='leagueForm'>
+            <h3>Please give your UNC record prediction to join {{league.name}}</h3>
+            <p>Your record must add up to {{league.leaguegame_set.count}} games</p>
+            <form method='post'>
+                {% csrf_token %}
+                {{form|crispy}}
+                {% for f in forms %}
+                {{f|crispy}}
+                {% endfor %}
+                <input type="submit" value="Submit Form"/>
+            </form>
+        </div>
+        <h4>{{err}}</h4>
+    {% else %}
+        <p>Not Logged In</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+{% block body %}
+    {% if game %}
+        <table>
+            <tr class='name'>
+                <td colspan='2'>{{game.game.home_team}}</td>
+                <td> @ </td>
+                <td colspan='2'>{{game.game.away_team}}</td>
+            </tr>
+                <td colspan='2'>{{game.game.home_score}}</td>
+                <td>{{game.spread}}</td>
+                <td colspan='2'>{{game.game.away_score}}</td>
+            </tr>
+            <tfoot>
+                <tr>
+                    <td colspan="5">{{game.game.start_date}}</td>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <table class = "Picks">
+            <tr>
+                <th>User</th>
+                <th>Winner Points</th>
+                <th>Spread Points</th>
+                <th>{{game.game.home_team}} Points</th>
+                <th>{{game.game.away_team}} Points</th>
+                <th>Perfect Game Points</th>
+                <th>Total Points</th>
+                <th>Season Points</th>
+            </tr>
+            {% for pick in game.pick_set.all %}
+                <tr>
+                    <td>{{pick.userseason.user.username}}</td>
+                    <td>{{pick.points_winner}}</td>
+                    <td>{{pick.points_spread}}</td>
+                    <td>{{pick.points_hscore}}</td>
+                    <td>{{pick.points_ascore}}</td>
+                    <td>{{pick.points_perfect}}</td>
+                    <td>{{pick.getTotalPoints}}</td>
+                    <td>{{pick.userseason.getTotalPoints}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <table class = "Picks">
+            <tr>
+                <th>User</th>
+                <th>{{game.game.home_team}} Score</th>
+                <th>{{game.game.away_team}} Score</th>
+                <th>Spread</th>
+            </tr>
+            {% for pick in game.pick_set.all %}
+                <tr>
+                    <td>{{pick.userseason.user.username}}</td>
+                    <td>{{pick.home_score}}</td>
+                    <td>{{pick.away_score}}</td>
+                    <td>{{pick.spread}}</td>
+
+                </tr>
+            {% endfor %}
+        </table>
+
+    {% else %}
+        <p>League Game Not Found</p>
+    {% endif %}
+{% endblock %}

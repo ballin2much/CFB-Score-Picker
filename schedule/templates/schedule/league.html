@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}League{% endblock %}
+{% block body %}
+{% if request.user.is_authenticated %}
+    {% if season %}
+        <h1 class='text-center'>{{season.league.name}}</h1>
+        <table class='table table-bordered table-responsive-sm'>
+            <tr><th class='text-center' colspan="6">Leaderboard</th></tr>
+            <tr>
+                <th>User</th>
+                <th>Game Points</th>
+                <th>Bonus Game Points</th>
+                <th>Schedule Bonus</th>
+                <th>Division Bonus</th>
+                <th>Total Points</th>
+            </tr>
+            {% for user in league.leaderboard %}
+                <tr>
+                    <td>{{user.0}}</td>
+                    <td>{{user.1}}</td>
+                    <td>{{user.2}}</td>
+                    <td>{{user.3}}</td>
+                    <td>{{user.4}}</td>
+                    <td>{{user.5}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% if request.user == season.user %}
+            {% for pick in season.pick_set.all|dictsort:"leaguegame.game.week" %}
+            <div class='container border border-primary mb-5'>
+            <h2 class="mt-5 text-center">
+                Week {{pick.leaguegame.game.week}}, {{pick.leaguegame.game}}
+                <br>
+                {{pick.leaguegame.game.start_date}}
+            </h2>
+            <h3 class='mb-4'>Status: {{pick.leaguegame.game.status}}</h3>
+                {% if pick.leaguegame.game.finished or pick.leaguegame.game.isLive %}                
+                    <h5 class="text-center">{{pick.leaguegame.game.home_team}}: {{pick.leaguegame.game.home_score}}, {{pick.leaguegame.game.away_team}}: {{pick.leaguegame.game.away_score}}</h5>
+<table class='table table-bordered table-responsive-sm'>
+                        <tr>
+                            <td colspan='4'>Predictions</th>
+                            <td colspan='6'>Point Breakdown</th>
+                        </tr>
+                        <tr>
+                           <th>Username</th>
+                           <th>{{pick.leaguegame.game.home_team}} Score</th>
+                           <th>{{pick.leaguegame.game.away_team}} Score</th>
+                           <th>Spread</th>
+                           <th>Winner</th>
+                           <th>{{pick.leaguegame.game.home_team}} Score</th>
+                           <th>{{pick.leaguegame.game.away_team}} Score</th>
+                           <th>Spread</th>
+                           <th>Perfect</th>
+                           <th>Total</th>
+                        </tr>
+                        {% for p in pick.leaguegame.getLeaderboard %}
+                            <tr>
+                                <td>{{p.userseason.user.username}}</td>
+                                <td>{{p.home_score}}</td>
+                                <td>{{p.away_score}}</td>
+                                <td>{{p.spread}}</td>
+                                <td>{{p.points_winner}}</td>
+                                <td>{{p.points_hscore}}</td>
+                                <td>{{p.points_ascore}}</td>
+                                <td>{{p.points_spread}}</td>
+                                <td>{{p.points_perfect}}</td>
+                                <td>{{p.getTotalPoints}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    <div>
+                        <h5 class="text-center">Current pick for {{pick.leaguegame.game}}:<br> {{pick.leaguegame.game.home_team}}: {{pick.home_score}}, {{pick.leaguegame.game.away_team}}: {{pick.away_score}}</h5>
+                        <h5 class="text-center">Update your pick for {{pick.leaguegame.game}} here:</h5>                       
+                        <form class="mb-5" method='post' action="../submitpick/{{pick.id}}">
+                            {% csrf_token %}
+                            {{form|crispy}}
+                            <input class ='btn btn-primary' type="submit" value="Submit Pick"/>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>You are not authorized to view this season</p>
+        {% endif %}
+    {% else %}
+        <p>Season does not exist</p>
+    {% endif %}
+{% else %}
+    <h3>You need to register or login to view this content</h3>
+{% endif %}
+{% endblock %}

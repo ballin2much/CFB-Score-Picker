@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Home{% endblock %}
+{% block body %}
+    {% if request.user.is_authenticated %}
+        <div class='leagueForm'>
+            <h3>Create League</h3>
+            <form method='post'>
+                {% csrf_token %}
+                {{form|crispy}}
+                <input type="submit" value="Submit Form"/>
+            </form>
+        </div>
+    {% else %}
+        <h3>You need to register or login to view this content</h3>
+    {% endif %}
+{% endblock %}
