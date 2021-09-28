@@ -1,14 +1,28 @@
 import datetime
 
 from django.db import models
+from django.db.models.deletion import CASCADE
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.core.validators import MinLengthValidator
 import urllib.request, json
 from operator import itemgetter
 
+class Team(models.Model):
+    name = models.TextField()
+    abbreviation = models.TextField()
+    color = models.CharField(max_length=6, validators=[MinLengthValidator(6)])
+    altcolor = models.CharField(max_length=6, validators=[MinLengthValidator(6)])
+    division = models.TextField()
+    def __str__(self):
+        return self.name
+
+    def schedule(self):
+        return Game.objects.filter(season=self.season).filter(home_team=self.Team) | Game.objects.filter(season=self.season).filter(away_team=self.Team)
+
 class Game(models.Model):
-    home_team = models.TextField()
-    away_team = models.TextField()
+    home_team = models.ForeignKey(Team, on_delete=CASCADE, related_name="home_team")
+    away_team = models.ForeignKey(Team, on_delete=CASCADE, related_name="away_team")
     start_date = models.DateTimeField(null=True)
     home_score = models.PositiveIntegerField(default=0)
     away_score = models.PositiveIntegerField(default=0)
@@ -20,7 +34,7 @@ class Game(models.Model):
         return self.home_score - self.away_score
 
     def __str__(self):
-        return self.away_team + ' @ ' + self.home_team
+        return self.away_team.name + ' @ ' + self.home_team.name
 
     def winner(self):
         if self.home_score > self.away_score:
@@ -74,22 +88,14 @@ class League(models.Model):
     points_winner = models.PositiveIntegerField(default=4)
     name = models.TextField()
     season = models.PositiveIntegerField()
-    points_bonus = models.PositiveIntegerField(default=4)
-    unc_place = models.PositiveIntegerField(null=True, blank=True)
+    team = models.ForeignKey(Team, on_delete=CASCADE)
 
     def createLeagueGames(self):
-        for game in Game.objects.filter(season=self.season):
+        for game in self.team.schedule:
             LeagueGame.objects.create(
                 game = game,
                 league = self
             )
-        
-        for game in BonusGame.objects.filter(season=self.season):
-            LeagueBonusGame.objects.create(
-                bonusgame = game,
-                league = self
-            )
-      
     
     def __str__(self):
         return self.name + " " + str(self.season) + " (Owner: " + self.owner.username + ")"
@@ -267,19 +273,3 @@ class Pick(models.Model):
 
     def isValid(self):
         return not (self.home_score == 0 and self.away_score == 0)
-
-class BonusGame(models.Model):
-    home_team = models.TextField()
-    away_team = models.TextField()
-    winner = models.TextField()
-    completed = models.BooleanField(default=False)
-    season = models.PositiveIntegerField()
-
-class LeagueBonusGame(models.Model):
-    bonusgame = models.ForeignKey(BonusGame, on_delete=models.CASCADE)
-    league = models.ForeignKey(League, on_delete=models.CASCADE)
-
-class UserBonusGamePick(models.Model):
-    game = models.ForeignKey(LeagueBonusGame, on_delete=models.CASCADE)
-    userseason = models.ForeignKey(UserSeason, on_delete=models.CASCADE)
-    pick = models.TextField()

@@ -3,7 +3,7 @@ from datetime import date
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
-from .forms import PickForm, LeagueForm, UserSeasonForm, UserBonusGamePickForm
+from .forms import PickForm, LeagueForm, UserSeasonForm
 
 from .models import Game, LeagueGame, UserSeason, Pick, League
 
@@ -55,24 +55,16 @@ def league(request, leagueid):
             season = form.save(commit = False)
             if (season.unc_wins + season.unc_losses != LeagueGame.objects.filter(league=leagueid).count()):
                 form = UserSeasonForm()
-                bonus = []
-                for bg in League.objects.get(id=leagueid).leaguebonusgame_set.all():
-                    bonus.append(UserBonusGamePickForm(bg))
-                return render(request, 'schedule/joinleague.html', {'form': form, 'forms': bonus, 'league': League.objects.get(id=leagueid), 'err':'Your number of wins and loses did not add up correctly'})
+                return render(request, 'schedule/joinleague.html', {'form': form, 'league': League.objects.get(id=leagueid), 'err':'Your number of wins and loses did not add up correctly'})
             elif (season.unc_place < 1 or season.unc_place > 7):
                 form = UserSeasonForm()
-                bonus = []
-                for bg in League.objects.get(id=leagueid).leaguebonusgame_set.all():
-                    bonus.append(UserBonusGamePickForm(bg))
-                return render(request, 'schedule/joinleague.html', {'form': form, 'forms': bonus, 'league': League.objects.get(id=leagueid), 'err':'ACC Coastal placement must be between 1 and 7'})
+                return render(request, 'schedule/joinleague.html', {'form': form, 'league': League.objects.get(id=leagueid), 'err':'ACC Coastal placement must be between 1 and 7'})
             else:
                 season.league = League.objects.get(id=leagueid)
                 season.user = request.user
                 season.save()
                 season.createPicks()
                 for bg in League.objects.get(id=leagueid).leaguebonusgame_set.all():
-                    form2 = UserBonusGamePickForm(bg, data=request.POST, prefix=bg.id)
-                    t = form2.save(commit = False)
                     t.userseason = season
                     t.game = bg
                     t.save()
@@ -85,9 +77,6 @@ def league(request, leagueid):
             return render(request, 'schedule/league.html', {'season': season, 'form': form, 'league': league, 'nav': ''})
         else:
             form = UserSeasonForm()
-            bonus = []
             i = 0
-            for bg in League.objects.get(id=leagueid).leaguebonusgame_set.all():
-                bonus.append(UserBonusGamePickForm(bg, prefix=bg.id))
-            return render(request, 'schedule/joinleague.html', {'form': form, 'forms': bonus, 'league': League.objects.get(id=leagueid), 'nav': ''})
+            return render(request, 'schedule/joinleague.html', {'form': form, 'league': League.objects.get(id=leagueid), 'nav': ''})
             
