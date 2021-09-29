@@ -17,8 +17,8 @@ class Team(models.Model):
     def __str__(self):
         return self.name
 
-    def schedule(self):
-        return Game.objects.filter(season=self.season).filter(home_team=self.Team) | Game.objects.filter(season=self.season).filter(away_team=self.Team)
+    def schedule(self, seasonx):
+        return Game.objects.filter(season=seasonx).filter(home_team=self) | Game.objects.filter(season=seasonx).filter(away_team=self)
 
 class Game(models.Model):
     home_team = models.ForeignKey(Team, on_delete=CASCADE, related_name="home_team")
@@ -91,7 +91,7 @@ class League(models.Model):
     team = models.ForeignKey(Team, on_delete=CASCADE)
 
     def createLeagueGames(self):
-        for game in self.team.schedule:
+        for game in self.team.schedule(2021):
             LeagueGame.objects.create(
                 game = game,
                 league = self
@@ -109,8 +109,8 @@ class League(models.Model):
     def leaderboard(self):
         lb = []
         for userseason in self.userseason_set.all():
-            lb.append([userseason.user.username, userseason.getGamePoints(), userseason.getBonusPoints(), userseason.getSchedulePoints(), userseason.getDivisionPoints(), userseason.getTotalPoints()])
-        return sorted(lb, key=itemgetter(5), reverse=True)
+            lb.append([userseason.user.username, userseason.getGamePoints()])
+        return sorted(lb, key=itemgetter(1), reverse=True)
 
     def completed(self):
         over = True
@@ -118,49 +118,21 @@ class League(models.Model):
             if not game.game.finished:
                 over = False
         return over
-
-    def uncwins(self):
-        wins = 0
-        for game in self.leaguegame_set.all():
-            if game.game.winner() == 'North Carolina':
-                wins += 1
-        return wins
-            
 class UserSeason(models.Model):
     league = models.ForeignKey(League, on_delete=models.CASCADE)
-    unc_wins = models.PositiveIntegerField(default=0)
-    unc_losses = models.PositiveIntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    unc_place = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.user.username + " (League: " + str(self.league) + ")"
 
     def getTotalPoints(self):
-        return self.getGamePoints() + self.getBonusPoints() + self.getSchedulePoints() + self.getDivisionPoints()
+        return self.getGamePoints()
         
     def getGamePoints(self):
         total = 0
         for pick in self.pick_set.all():
             total += pick.getTotalPoints()
         return total
-
-    def getBonusPoints(self):
-        total = 0
-        for game in self.userbonusgamepick_set.all():
-            if game.game.bonusgame.completed and game.pick == game.game.bonusgame.winner:
-                total += self.league.points_bonus
-        return total
-
-    def getSchedulePoints(self):
-        if self.league.completed and self.unc_wins == self.league.uncwins():
-                return self.league.points_bonus
-        return 0
-
-    def getDivisionPoints(self):
-        if self.league.completed and self.unc_place == self.league.unc_place:
-                return self.league.points_bonus
-        return 0
 
     def createPicks(self):
         for game in self.league.leaguegame_set.all():

@@ -3,7 +3,7 @@ from datetime import date
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
-from .forms import PickForm, LeagueForm, UserSeasonForm
+from .forms import PickForm, LeagueForm
 
 from .models import Game, LeagueGame, UserSeason, Pick, League
 
@@ -49,34 +49,16 @@ def createleague(request):
         return render(request, 'schedule/createleague.html', {'form': form, 'nav':'create'})
 
 def league(request, leagueid):
-    if request.method == 'POST':
-        form = UserSeasonForm(request.POST)
-        if form.is_valid() and not UserSeason.objects.filter(league=leagueid, user=request.user).exists():
-            season = form.save(commit = False)
-            if (season.unc_wins + season.unc_losses != LeagueGame.objects.filter(league=leagueid).count()):
-                form = UserSeasonForm()
-                return render(request, 'schedule/joinleague.html', {'form': form, 'league': League.objects.get(id=leagueid), 'err':'Your number of wins and loses did not add up correctly'})
-            elif (season.unc_place < 1 or season.unc_place > 7):
-                form = UserSeasonForm()
-                return render(request, 'schedule/joinleague.html', {'form': form, 'league': League.objects.get(id=leagueid), 'err':'ACC Coastal placement must be between 1 and 7'})
-            else:
-                season.league = League.objects.get(id=leagueid)
-                season.user = request.user
-                season.save()
-                season.createPicks()
-                for bg in League.objects.get(id=leagueid).leaguebonusgame_set.all():
-                    t.userseason = season
-                    t.game = bg
-                    t.save()
-                return HttpResponseRedirect('')
-    else:
-        if request.user.is_authenticated and UserSeason.objects.filter(league=leagueid, user=request.user).exists():
+        if request.user.is_authenticated:
+            if not UserSeason.objects.filter(league=leagueid, user=request.user).exists():
+                l = UserSeason(
+                    league = League.objects.get(id=leagueid),
+                    user = request.user
+                )
+                l.save()
+                l.createPicks()
             league = League.objects.get(id=leagueid).updatePoints()       
             season = UserSeason.objects.get(league=leagueid, user=request.user)
             form = PickForm()
             return render(request, 'schedule/league.html', {'season': season, 'form': form, 'league': league, 'nav': ''})
-        else:
-            form = UserSeasonForm()
-            i = 0
-            return render(request, 'schedule/joinleague.html', {'form': form, 'league': League.objects.get(id=leagueid), 'nav': ''})
             

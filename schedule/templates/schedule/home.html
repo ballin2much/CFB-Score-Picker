@@ -7,8 +7,6 @@
     {% for season in user.userseason_set.all %}
                 <h1>League Name: {{season.league.name}}<h1>
                 <p>Your Points: {{season.getTotalPoints}}</p>
-                <p>Record Pick: {{season.unc_wins}} - {{season.unc_losses}}</p>
-                <p>Division Place Pick: {{season.unc_place}} </p>
                 <button type="button" class='btn btn-primary btn-lg mb-5' onclick="window.location.href = '../league/{{season.league.id}}';">Go to league page</button>
             {% endfor %}
     </div>

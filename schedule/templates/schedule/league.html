@@ -12,19 +12,11 @@
             <tr>
                 <th>User</th>
                 <th>Game Points</th>
-                <th>Bonus Game Points</th>
-                <th>Schedule Bonus</th>
-                <th>Division Bonus</th>
-                <th>Total Points</th>
             </tr>
             {% for user in league.leaderboard %}
                 <tr>
                     <td>{{user.0}}</td>
                     <td>{{user.1}}</td>
-                    <td>{{user.2}}</td>
-                    <td>{{user.3}}</td>
-                    <td>{{user.4}}</td>
-                    <td>{{user.5}}</td>
                 </tr>
             {% endfor %}
         </table>

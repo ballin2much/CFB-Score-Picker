@@ -1,5 +1,5 @@
 from django import forms
-from .models import Pick, League, UserSeason
+from .models import Pick, League, UserSeason, Team
 from django.utils.translation import gettext_lazy as _
 
 class PickForm(forms.ModelForm):
@@ -11,12 +11,11 @@ class PickForm(forms.ModelForm):
 class LeagueForm(forms.ModelForm):
     class Meta:
         model = League
-        exclude = ['owner', 'season', 'unc_place']
+        exclude = ['owner', 'season']
         labels = {
             'name': _('League Name'),
         }
-
-class UserSeasonForm(forms.ModelForm):
-    class Meta:
-        model = UserSeason
-        exclude = ['league', 'points', 'user']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args,**kwargs)
+        self.fields['team'].queryset = Team.objects.filter(division="FBS")

@@ -21,7 +21,6 @@ class Command(BaseCommand):
                     done = event['competitions'][0]['status']['type']['completed']
                     pre = bool(event['competitions'][0]['status']['type']['state'] == 'pre')
                     for team in event['competitions'][0]['competitors']:
-                        print(team['team']['id'])
                         if team['homeAway'] == 'home':
                             if not pre:
                                 hscr = team['score']['value']

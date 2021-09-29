@@ -14,10 +14,11 @@ If you need to create an admin user:
 ballin2much@PC:~/CFB-Score-Picker$ sudo docker-compose run web python manage.py createsuperuser
 ```
 
-In order to actually use the site you'll also need to download the schedule from the ESPN API into your database. To do so, run the the following:
+Now you need to run a custom admin command in order to populate the database with team and game data from ESPN. To do so run the following
 ```console
+ballin2much@PC:~/CFB-Score-Picker$ sudo docker-compose run web python manage.py getteams
 ballin2much@PC:~/CFB-Score-Picker$ sudo docker-compose run web python manage.py getschedule 2021
 ```
-*This currently only gets the UNC schedule, I'll work on getting the others in the future.*
+The first line populates the database with all FBS and FCS teams, while the second command pulls every game that involves an FCS team.
 
 You will also need to create a .env file with a value for SECRET_KEY. 
