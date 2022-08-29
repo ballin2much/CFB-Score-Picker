@@ -1,0 +1,11 @@
+databases:
+  - name: db
+  databasename: db
+  user: postgres
+  postgresMajorVersion: 14
+
+services:
+  web:
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: bash -c "python manage.py migrate && python manage.py collectstatic --no-input && python manage.py runserver 0.0.0.0:8000"
