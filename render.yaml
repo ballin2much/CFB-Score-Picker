@@ -1,11 +1,10 @@
 databases:
   - name: db
-    databaseName: db
-    user: postgres
     postgresMajorVersion: 14
 
 services:
   - type : web
+    name: django
     env: docker
     dockerfilePath: ./Dockerfile
     dockerCommand: bash -c "python manage.py migrate && python manage.py collectstatic --no-input && python manage.py runserver 0.0.0.0:8000"
