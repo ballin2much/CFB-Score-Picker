@@ -30,7 +30,7 @@ class Command(BaseCommand):
                                 ascr = team['score']['value']
                             away = Team.objects.get(id=team['team']['id'])
                     
-                    if not Game.objects.get(id=event['id']).exists():
+                    if not Game.objects.filter(id=event['id']).exists():
                         Game.objects.get_or_create(
                             home_team = home, 
                             away_team = away, 
