@@ -30,15 +30,16 @@ class Command(BaseCommand):
                                 ascr = team['score']['value']
                             away = Team.objects.get(id=team['team']['id'])
                     
-                    Game.objects.get_or_create(
-                        home_team = home, 
-                        away_team = away, 
-                        start_date = event['date'], 
-                        home_score = hscr, 
-                        away_score = ascr, 
-                        finished = done, 
-                        week = event['week']['number'], 
-                        season = options['year'],
-                        id = event['id']
-                    )
+                    if not Game.objects.get(id=event['id']).exists():
+                        Game.objects.get_or_create(
+                            home_team = home, 
+                            away_team = away, 
+                            start_date = event['date'], 
+                            home_score = hscr, 
+                            away_score = ascr, 
+                            finished = done, 
+                            week = event['week']['number'], 
+                            season = options['year'],
+                            id = event['id']
+                        )
         return "We made it."
