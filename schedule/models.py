@@ -91,11 +91,12 @@ class League(models.Model):
     team = models.ForeignKey(Team, on_delete=CASCADE)
 
     def createLeagueGames(self):
-        for game in self.team.schedule(2021):
-            LeagueGame.objects.create(
-                game = game,
-                league = self
-            )
+        for game in self.team.schedule(self.season):
+            if not self.leaguegame_set.filter(game = game).exists():
+                LeagueGame.objects.create(
+                    game = game,
+                    league = self
+                )
     
     def __str__(self):
         return self.name + " " + str(self.season) + " (Owner: " + self.owner.username + ")"
@@ -136,10 +137,11 @@ class UserSeason(models.Model):
 
     def createPicks(self):
         for game in self.league.leaguegame_set.all():
-            Pick.objects.create(
-                leaguegame = game,
-                userseason = self
-            )
+            if not self.pick_set.filter(leaguegame = game).exists():
+                Pick.objects.create(
+                    leaguegame = game,
+                    userseason = self
+                )
 
 class LeagueGame(models.Model):
     league = models.ForeignKey(League, on_delete=models.CASCADE)
