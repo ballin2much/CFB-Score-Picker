@@ -20,26 +20,27 @@ class Command(BaseCommand):
                     hscr = ascr = 0
                     done = event['competitions'][0]['status']['type']['completed']
                     pre = bool(event['competitions'][0]['status']['type']['state'] == 'pre')
-                    for team in event['competitions'][0]['competitors']:
-                        if team['homeAway'] == 'home':
-                            if not pre:
-                                hscr = team['score']['value']
-                            home = Team.objects.get(id=team['team']['id'])
-                        else:
-                            if not pre:
-                                ascr = team['score']['value']
-                            away = Team.objects.get(id=team['team']['id'])
-                    
-                    if not Game.objects.filter(id=event['id']).exists():
-                        Game.objects.get_or_create(
-                            home_team = home, 
-                            away_team = away, 
-                            start_date = event['date'], 
-                            home_score = hscr, 
-                            away_score = ascr, 
-                            finished = done, 
-                            week = event['week']['number'], 
-                            season = options['year'],
-                            id = event['id']
-                        )
+                    if Team.objects.filter(id = event['competitions'][0]['competitors'][0]).exists() and Team.objects.filter(id = event['competitions'][0]['competitors'][1]).exists():       
+                        for team in event['competitions'][0]['competitors']:
+                            if team['homeAway'] == 'home':
+                                if not pre:
+                                    hscr = team['score']['value']
+                                home = Team.objects.get(id=team['team']['id'])
+                            else:
+                                if not pre:
+                                    ascr = team['score']['value']
+                                away = Team.objects.get(id=team['team']['id'])
+                        
+                        if not Game.objects.filter(id=event['id']).exists():
+                            Game.objects.get_or_create(
+                                home_team = home, 
+                                away_team = away, 
+                                start_date = event['date'], 
+                                home_score = hscr, 
+                                away_score = ascr, 
+                                finished = done, 
+                                week = event['week']['number'], 
+                                season = options['year'],
+                                id = event['id']
+                            )
         return "We made it."
